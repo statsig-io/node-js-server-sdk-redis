@@ -1,4 +1,10 @@
-import { AdapterResponse, IDataAdapter, ConfigStore } from 'statsig-node/interfaces';
+// import { AdapterResponse, IDataAdapter, ConfigStore } from 'statsig-node/interfaces';
+import {
+  AdapterResponse
+} from 'statsig-node/dist/interfaces/IDataAdapter';
+import {
+  IDataAdapter
+} from 'statsig-node/dist/interfaces/IDataAdapter';
 import * as redis from 'redis';
 import { RedisClientOptions } from 'redis';
 
@@ -15,77 +21,82 @@ export default class RedisDataAdapter implements IDataAdapter {
     };
     this.client = redis.createClient(options);
   }
-
-  public async fetchStore(): Promise<AdapterResponse> {
-    if (!this.client.isOpen) {
-      await this.client.connect();
-    }
-    const obj = await this.client.hGetAll('config-store');
-    if (obj === null) {
-      return { error: new Error('store is empty') };
-    }
-
-    const result: { [key: string]: any } = {
-      gates: {},
-      configs: {},
-      idLists: {},
-      layers: {},
-      experimentToLayer: {},
-    };
-    for (const key in obj) {
-      if (Object.hasOwnProperty.call(obj, key)) {
-        result[key] = JSON.parse(obj[key]);
-      }
-    }
-    const time = await this.client.get('time');
-
-    return {store: result as ConfigStore, time: Number(time)} ;
+  public async getConfigs(): Promise<AdapterResponse> {
+    return await this.fetchItem('configs');
+  }
+  public async setConfigs(
+    configs: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
+    await this.updateItem('configs', configs, time);
   }
 
-  public async fetchFromStore(item: string): Promise<AdapterResponse> {
-    if (!this.client.isOpen) {
-      await this.client.connect();
-    }
-    const record = await this.client.hGet('config-store', item);
+  public async getGates(): Promise<AdapterResponse> {
+    return await this.fetchItem('gates');
+  }
+  public async setGates(
+    gates: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
+    await this.updateItem('gates', gates, time);
+  }
+  public async getIDLists(): Promise<AdapterResponse> {
+    return await this.fetchItem('id-lists');
+  }
+  public async setIDLists(
+    idLists: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
+    await this.updateItem('id-lists', idLists, time);
+  }
+  public async getLayers(): Promise<AdapterResponse> {
+    return await this.fetchItem('layers');
+  }
+  public async setLayers(
+    layers: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
+    await this.updateItem('layers', layers, time);
+  }
+  public async getLayerConfigs(): Promise<AdapterResponse> {
+    return await this.fetchItem('layer-configs');
+  }
+  public async setLayerConfigs(
+    layerConfigs: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
+    await this.updateItem('layer-configs', layerConfigs, time);
+  }
+
+  private async fetchItem(key: string): Promise<AdapterResponse> {
+    const record = await this.client.hGet(key, 'data');
     if (record === null) {
       return { error: new Error('item is invalid') };
     }
     if (record === undefined) {
       return { error: new Error('item is not defined') };
     }
-    const time = await this.client.get('time');
+    const result = JSON.parse(record);
+    const time = await this.client.hGet(key, 'time');
       
-    return {item: JSON.parse(record), time: Number(time)}
+    return {result: result, time: Number(time)}
   }
 
-  public async updateStore(store: ConfigStore, time?: number): Promise<void> {
-    if (!this.client.isOpen) {
-      await this.client.connect();
-    }
+  private async updateItem(
+    key: string,
+    data: Record<string, unknown>,
+    time?: number,
+  ): Promise<void> {
     const multi = this.client.multi();
-    if (store.gates) {
-      multi.hSet('config-store', 'gates', JSON.stringify(store.gates));
+    multi.hSet(key, 'data', JSON.stringify(data));
+    if (time !== undefined) {
+      multi.hSet(key, 'time', time);
     }
-    if (store.configs) {
-      multi.hSet('config-store', 'configs', JSON.stringify(store.configs));
-    }
-    if (store.idLists) {
-      multi.hSet('config-store', 'idLists', JSON.stringify(store.idLists));
-    }
-    if (store.layers) {
-      multi.hSet('config-store', 'layers', JSON.stringify(store.layers));
-    }
-    if (store.experimentToLayer) {
-      multi.hSet(
-        'config-store',
-        'experimentToLayer',
-        JSON.stringify(store.experimentToLayer),
-      );
-    }
-    if (time) {
-      multi.set('time', time);
-    }
-    await multi.exec();
+    multi.exec();
+  }
+
+  public async initialize(): Promise<void> {
+    await this.client.connect();
   }
 
   public async shutdown(): Promise<void> {

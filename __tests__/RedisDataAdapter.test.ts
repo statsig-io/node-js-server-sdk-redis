@@ -37,14 +37,10 @@ describe('Validate redis config adapter functionality', () => {
       = new ConfigSpec(exampleConfigSpecs.gate);
     configs[exampleConfigSpecs.config.name]
       = new ConfigSpec(exampleConfigSpecs.config);
-    const configSpecs = {
-      gates: gates,
-      configs: configs,
-      layers: {},
-      experimentToLayer: {},
-    }
     const time = Date.now();
-    await dataAdapter.updateStore(configSpecs, time);
+    await dataAdapter.initialize();
+    await dataAdapter.setConfigs(configs, time);
+    await dataAdapter.setGates(gates, time);
 
     // Initialize without network
     await statsig.initialize(serverKey, { localMode: true, ...statsigOptions });
@@ -63,17 +59,13 @@ describe('Validate redis config adapter functionality', () => {
   });
   
   test('Verify that redis store is updated when network response can be received', async () => {
-    expect.assertions(4)
+    expect.assertions(2)
 
     // Initialize with network
     await statsig.initialize(serverKey, statsigOptions);
 
-    const {store} = await dataAdapter.fetchStore();
-    expect(store).not.toBeNull();
-    expect(store).not.toEqual({});
-
     // Check gates
-    const gates = store?.gates;
+    const {result: gates} = await dataAdapter.getGates();
     if (gates == null) {
       return;
     }
@@ -81,7 +73,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates['test_email_regex'].defaultValue).toEqual(false);
 
     // Check configs
-    const configs = store?.configs;
+    const {result: configs} = await dataAdapter.getConfigs();
     if (configs == null) {
       return;
     }
@@ -91,7 +83,7 @@ describe('Validate redis config adapter functionality', () => {
   });
 
   test('Verify bootstrap properly gets synced in redis', async () => {
-    expect.assertions(4);
+    expect.assertions(2);
 
     const jsonResponse = {
       time: Date.now(),
@@ -110,12 +102,8 @@ describe('Validate redis config adapter functionality', () => {
       ...statsigOptions,
     });
 
-    const {store} = await dataAdapter.fetchStore();
-    expect(store).not.toBeNull();
-    expect(store).not.toEqual({});
-
     // Check gates
-    const gates = store?.gates;
+    const {result: gates} = await dataAdapter.getGates();
     if (gates == null) {
       return;
     }
@@ -125,7 +113,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates).toEqual(expectedGates);
 
     // Check configs
-    const configs = store?.configs;
+    const {result: configs} = await dataAdapter.getConfigs();
     if (configs == null) {
       return;
     }
@@ -140,12 +128,12 @@ describe('Validate redis config adapter functionality', () => {
     await statsig.initialize(serverKey, statsigOptions);
 
     // Check id lists
-    const {item} = await dataAdapter.fetchFromStore('idLists');
-    expect(item).not.toBeNull();
-    expect(item).not.toBeUndefined();
-    expect(item).not.toEqual({});
+    const {result: idLists} = await dataAdapter.getIDLists();
+    expect(idLists).not.toBeNull();
+    expect(idLists).not.toBeUndefined();
+    expect(idLists).not.toEqual({});
 
     // @ts-ignore
-    expect(item['user_id_list'].fileID).not.toBeFalsy();
+    expect(idLists['user_id_list'].fileID).not.toBeFalsy();
   });
 })

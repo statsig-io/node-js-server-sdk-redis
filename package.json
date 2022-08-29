@@ -15,7 +15,7 @@
     "interfaces@4.17.3-beta.0": "link:statsig-node/interfaces@4.17.3-beta.0",
     "jest": "^29.0.0",
     "redis": "^4.3.0",
-    "statsig-node": "4.17.3-beta.0"
+    "statsig-node": "4.17.5-beta.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.13",
