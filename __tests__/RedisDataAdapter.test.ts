@@ -39,8 +39,11 @@ describe('Validate redis config adapter functionality', () => {
       = new ConfigSpec(exampleConfigSpecs.config);
     const time = Date.now();
     await dataAdapter.initialize();
-    await dataAdapter.setConfigs(configs, time);
-    await dataAdapter.setGates(gates, time);
+    await dataAdapter.setMulti(
+      { 'configs': configs, 'gates': gates },
+      'config-specs',
+      time,
+    );
 
     // Initialize without network
     await statsig.initialize(serverKey, { localMode: true, ...statsigOptions });
@@ -64,8 +67,13 @@ describe('Validate redis config adapter functionality', () => {
     // Initialize with network
     await statsig.initialize(serverKey, statsigOptions);
 
+    const { result: configSpecs } = await dataAdapter.get('config-specs');
+    if (configSpecs == null) {
+      return;
+    }
+
     // Check gates
-    const {result: gates} = await dataAdapter.getGates();
+    const gates = configSpecs['gates'];
     if (gates == null) {
       return;
     }
@@ -73,7 +81,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates['test_email_regex'].defaultValue).toEqual(false);
 
     // Check configs
-    const {result: configs} = await dataAdapter.getConfigs();
+    const configs = configSpecs['configs'];
     if (configs == null) {
       return;
     }
@@ -101,9 +109,14 @@ describe('Validate redis config adapter functionality', () => {
       bootstrapValues: JSON.stringify(jsonResponse),
       ...statsigOptions,
     });
+    
+    const { result: configSpecs } = await dataAdapter.get('config-specs');
+    if (configSpecs == null) {
+      return;
+    }
 
     // Check gates
-    const {result: gates} = await dataAdapter.getGates();
+    const gates = configSpecs['gates'];
     if (gates == null) {
       return;
     }
@@ -113,7 +126,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates).toEqual(expectedGates);
 
     // Check configs
-    const {result: configs} = await dataAdapter.getConfigs();
+    const configs = configSpecs['configs'];
     if (configs == null) {
       return;
     }
@@ -128,7 +141,7 @@ describe('Validate redis config adapter functionality', () => {
     await statsig.initialize(serverKey, statsigOptions);
 
     // Check id lists
-    const {result: idLists} = await dataAdapter.getIDLists();
+    const {result: idLists} = await dataAdapter.get('id-lists');
     expect(idLists).not.toBeNull();
     expect(idLists).not.toBeUndefined();
     expect(idLists).not.toEqual({});

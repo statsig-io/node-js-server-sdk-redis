@@ -9,14 +9,14 @@ specifiers:
   interfaces@4.17.3-beta.0: link:statsig-node/interfaces@4.17.3-beta.0
   jest: ^29.0.0
   redis: ^4.3.0
-  statsig-node: 4.17.5-beta.0
+  statsig-node: 4.17.7-beta.0
 
 dependencies:
   babel: 6.23.0
   interfaces@4.17.3-beta.0: link:statsig-node/interfaces@4.17.3-beta.0
   jest: 29.0.0
   redis: 4.3.0
-  statsig-node: 4.17.5-beta.0
+  statsig-node: 4.17.7-beta.0
 
 devDependencies:
   '@babel/core': 7.18.13
@@ -3275,8 +3275,8 @@ packages:
     dependencies:
       escape-string-regexp: 2.0.0
 
-  /statsig-node/4.17.5-beta.0:
-    resolution: {integrity: sha512-IaA+hDPTBpT9z8LXOXUFE/e29Pg0sGi/t26v1DkHz7zYX5/3NFJJtHNpeDDL3XMvKb5LNAg1ykCOdXT+Zb7EgQ==}
+  /statsig-node/4.17.7-beta.0:
+    resolution: {integrity: sha512-HtzGYYloXjr/u4fyKPUgdpkKKkOFfPjdb9GvME9I9j4KYqvEfbD1hD3lIRTOXzv9vu+XKBTpS+2QH/eYHRnrGw==}
     dependencies:
       '@types/node-fetch': 2.6.2
       ip3country: 5.0.0
