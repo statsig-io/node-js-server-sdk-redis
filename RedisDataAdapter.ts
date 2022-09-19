@@ -1,5 +1,5 @@
 import {
-  AdapterResponse, AdapterResult, IDataAdapter
+  AdapterResponse, IDataAdapter
 } from 'statsig-node/dist/interfaces/IDataAdapter';
 import * as redis from 'redis';
 import { RedisClientOptions } from 'redis';
@@ -26,34 +26,31 @@ export default class RedisDataAdapter implements IDataAdapter {
   }
 
   public async get(key: string): Promise<AdapterResponse> {
-    // Try fetching as master key
-    const masterKey = globalKeyPrefix.concat('-', key);
-    const maybeRecords = await this.client.hGetAll(masterKey);
-    if (Object.entries(maybeRecords).length < 1) {
-      // Fallback to single record
-      const singleRecord = await this.client.hGet(globalKeyPrefix, key);
-      if (singleRecord == null) {
-        return { error: new Error('key does not exist') };
-      }
-      const time = await this.client.hGet(globalKeyPrefix, timeKey)
-      return {result: JSON.parse(singleRecord), time: Number(time)}
-    } else {
-      for (const itemKey in maybeRecords) {
-        maybeRecords[itemKey] = JSON.parse(maybeRecords[itemKey]);
-      }
-      const time = await this.client.hGet(timeKey, masterKey);
-      return {result: maybeRecords, time: Number(time)}
+    const result = await this.client.hGet(globalKeyPrefix, key);
+    if (result == null) {
+      return { error: new Error('key does not exist') };
     }
+    const time = await this.client.hGet(globalKeyPrefix, timeKey)
+    return {result, time: Number(time)}
+  }
+
+  public async getMulti(keys: string[]): Promise<AdapterResponse> {
+    const result = {};
+    const multi = this.client.multi();
+    for (const key of keys) {
+      result[key] = await this.client.hGet(globalKeyPrefix, key);
+    }
+    const time = await this.client.hGet(globalKeyPrefix, timeKey);
+    return {result, time: Number(time)}
   }
 
   public async set(
     key: string,
-    value: AdapterResult,
+    value: string,
     time?: number | undefined,
   ): Promise<void> {
     const multi = this.client.multi();
-    const masterKey = globalKeyPrefix;
-    multi.hSet(masterKey, key, JSON.stringify(value));
+    multi.hSet(globalKeyPrefix, key, value);
     if (time !== undefined) {
       multi.hSet(key, timeKey, time);
     }
@@ -61,20 +58,15 @@ export default class RedisDataAdapter implements IDataAdapter {
   }
 
   public async setMulti(
-    records: Record<string, AdapterResult>,
-    key?: string,
+    records: Record<string, string>,
     time?: number,
   ): Promise<void> {
     const multi = this.client.multi();
-    let masterKey = globalKeyPrefix;
-    if (key != null && key != '') {
-      masterKey = masterKey.concat('-', key);
-    }
     for (const itemKey in records) {
-      multi.hSet(masterKey, itemKey, JSON.stringify(records[itemKey]));
+      multi.hSet(globalKeyPrefix, itemKey, records[itemKey]);
     }
     if (time !== undefined) {
-      multi.hSet(timeKey, masterKey, time);
+      multi.hSet(globalKeyPrefix, timeKey, time);
     }
     multi.exec();
   }

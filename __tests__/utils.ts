@@ -1,5 +1,7 @@
+import zlib from 'zlib';
+
 /**
- * The following classes are copied over from node-js-server-sdk
+ * The following classes/functions are copied over from node-js-server-sdk
  * and used to help create mock values for testing.
  */
 export class ConfigSpec {
@@ -98,4 +100,12 @@ export class ConfigCondition {
       (conditionJSON.additionalValues as Record<string, unknown>) ?? {};
     this.idType = conditionJSON.idType as string;
   }
+}
+
+export function compressData(data: string): string {
+  return zlib.deflateSync(data).toString('base64');
+}
+
+export function decompressData(data: string): string {
+  return zlib.inflateSync(Buffer.from(data, 'base64')).toString();
 }

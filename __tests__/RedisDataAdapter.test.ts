@@ -1,5 +1,5 @@
 import RedisDataAdapter from '../RedisDataAdapter';
-import { ConfigSpec } from './utils';
+import { compressData, ConfigSpec, decompressData } from './utils';
 import exampleConfigSpecs from '../jest.setup';
 import * as redis from 'redis';
 import * as statsigsdk from 'statsig-node';
@@ -46,10 +46,18 @@ describe('Validate redis config adapter functionality', () => {
     const time = Date.now();
     await dataAdapter.initialize();
     await dataAdapter.setMulti(
-      { 'configs': configs, 'gates': gates },
-      'config-specs',
+      {
+        'configs': compressData(JSON.stringify(configs)),
+        'gates': compressData(JSON.stringify(gates)),
+        'layer-configs': compressData(JSON.stringify({})),
+        'layers': compressData(JSON.stringify({})),
+      },
       time,
     );
+    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    if (result == null) {
+      return;
+    }
 
     // Initialize without network
     await statsig.initialize(serverKey, { localMode: true, ...statsigOptions });
@@ -73,13 +81,13 @@ describe('Validate redis config adapter functionality', () => {
     // Initialize with network
     await statsig.initialize(serverKey, statsigOptions);
 
-    const { result: configSpecs } = await dataAdapter.get('config-specs');
-    if (configSpecs == null) {
+    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    if (result == null) {
       return;
     }
 
     // Check gates
-    const gates = configSpecs['gates'];
+    const gates = JSON.parse(decompressData(result['gates']));
     if (gates == null) {
       return;
     }
@@ -87,7 +95,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates['test_email_regex'].defaultValue).toEqual(false);
 
     // Check configs
-    const configs = configSpecs['configs'];
+    const configs = JSON.parse(decompressData(result['configs']));
     if (configs == null) {
       return;
     }
@@ -116,13 +124,13 @@ describe('Validate redis config adapter functionality', () => {
       ...statsigOptions,
     });
     
-    const { result: configSpecs } = await dataAdapter.get('config-specs');
-    if (configSpecs == null) {
+    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    if (result == null) {
       return;
     }
 
     // Check gates
-    const gates = configSpecs['gates'];
+    const gates = JSON.parse(decompressData(result['gates']));
     if (gates == null) {
       return;
     }
@@ -132,7 +140,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates).toEqual(expectedGates);
 
     // Check configs
-    const configs = configSpecs['configs'];
+    const configs = JSON.parse(decompressData(result['configs']));
     if (configs == null) {
       return;
     }
@@ -146,13 +154,13 @@ describe('Validate redis config adapter functionality', () => {
     // Initialize with network
     await statsig.initialize(serverKey, statsigOptions);
 
-    // Check id lists
-    const {result: idLists} = await dataAdapter.get('id-lists');
-    expect(idLists).not.toBeNull();
-    expect(idLists).not.toBeUndefined();
-    expect(idLists).not.toEqual({});
+    dataAdapter.set('gates', 'test123');
 
-    // @ts-ignore
-    expect(idLists['user_id_list'].fileID).not.toBeFalsy();
+    // Check id lists
+    const { result: gates } = await dataAdapter.get('gates');
+    if (gates == null) {
+      return;
+    }
+    expect(gates).toEqual('test123');
   });
 })
