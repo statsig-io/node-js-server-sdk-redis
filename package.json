@@ -17,6 +17,9 @@
     "redis": "^4.3.0",
     "statsig-node": "4.17.7-beta.0"
   },
+  "peerDependencies": {
+    "statsig-node": "4.17.7-beta.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.18.13",
     "@babel/preset-env": "^7.18.10",

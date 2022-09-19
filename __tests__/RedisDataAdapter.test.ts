@@ -1,6 +1,7 @@
 import RedisDataAdapter from '../RedisDataAdapter';
 import { ConfigSpec } from './utils';
 import exampleConfigSpecs from '../jest.setup';
+import * as redis from 'redis';
 import * as statsigsdk from 'statsig-node';
 // @ts-ignore
 const statsig = statsigsdk.default;
@@ -8,7 +9,8 @@ const statsig = statsigsdk.default;
 describe('Validate redis config adapter functionality', () => {
   const serverKey = 'secret-9IWfdzNwExEYHEW4YfOQcFZ4xreZyFkbOXHaNbPsMwW'; 
     // --> Project: "Statsig - evaluation test", "Kong" server key
-  const dataAdapter = new RedisDataAdapter('localhost', 6379);
+  const dbNumber = 1;
+  const dataAdapter = new RedisDataAdapter();
   const statsigOptions = {
     dataAdapter: dataAdapter,
     environment: { tier: 'staging' },
@@ -24,7 +26,11 @@ describe('Validate redis config adapter functionality', () => {
   })
 
   afterEach(async () => {
-    dataAdapter.clearCache();
+    const client = redis.createClient();
+    client.connect();
+    client.select(dbNumber);
+    client.flushDb();
+    client.quit();
     await dataAdapter.shutdown();
     await statsig.shutdown();
   });

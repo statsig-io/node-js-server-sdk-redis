@@ -1,9 +1,5 @@
-// import { AdapterResponse, IDataAdapter, ConfigStore } from 'statsig-node/interfaces';
 import {
-  AdapterResponse, AdapterResult
-} from 'statsig-node/dist/interfaces/IDataAdapter';
-import {
-  IDataAdapter
+  AdapterResponse, AdapterResult, IDataAdapter
 } from 'statsig-node/dist/interfaces/IDataAdapter';
 import * as redis from 'redis';
 import { RedisClientOptions } from 'redis';
@@ -15,7 +11,7 @@ const timeKey = globalKeyPrefix + '-time';
 export default class RedisDataAdapter implements IDataAdapter {
   private client;
 
-  public constructor(hostname: string, port?: number, password?: string) {
+  public constructor(hostname?: string, port?: number, password?: string, db?: number) {
     const options: RedisClientOptions = {
       socket: {
         host: hostname,
@@ -24,6 +20,9 @@ export default class RedisDataAdapter implements IDataAdapter {
       password: password
     };
     this.client = redis.createClient(options);
+    if (db !== undefined) {
+      this.client.select(db);
+    }
   }
 
   public async get(key: string): Promise<AdapterResponse> {
@@ -89,12 +88,6 @@ export default class RedisDataAdapter implements IDataAdapter {
   public async shutdown(): Promise<void> {
     if (this.client.isOpen) {
       await this.client.quit();
-    }
-  }
-
-  public clearCache(): void {
-    if (this.client.isOpen) {
-      this.client.flushAll();
     }
   }
 }
