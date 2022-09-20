@@ -1,5 +1,5 @@
 import RedisDataAdapter from '../RedisDataAdapter';
-import { compressData, ConfigSpec, decompressData } from './utils';
+import { ConfigSpec } from './utils';
 import exampleConfigSpecs from '../jest.setup';
 import * as redis from 'redis';
 import * as statsigsdk from 'statsig-node';
@@ -21,6 +21,30 @@ describe('Validate redis config adapter functionality', () => {
     custom: { level: 9 },
   };
 
+  async function loadRedisStore() {
+    // Manually set up redis store
+    const gates: Record<string, ConfigSpec> = {};
+    const configs: Record<string, ConfigSpec> = {};
+    gates[exampleConfigSpecs.gate.name]
+      = new ConfigSpec(exampleConfigSpecs.gate);
+    configs[exampleConfigSpecs.config.name]
+      = new ConfigSpec(exampleConfigSpecs.config);
+    const time = Date.now();
+    await dataAdapter.initialize();
+    await dataAdapter.set(
+      'config-specs',
+      JSON.stringify(
+        {
+          'configs': configs,
+          'gates': gates,
+          'layer-configs': {},
+          'layers': {},
+        },
+      ),
+      time,
+    );
+  }
+
   beforeEach(() => {
     statsig._instance = null;
   })
@@ -36,25 +60,9 @@ describe('Validate redis config adapter functionality', () => {
   });
 
   test('Verify that config specs can be fetched from redis store when network is down', async () => {
-    // Manually set up redis store
-    const gates: Record<string, ConfigSpec> = {};
-    const configs: Record<string, ConfigSpec> = {};
-    gates[exampleConfigSpecs.gate.name]
-      = new ConfigSpec(exampleConfigSpecs.gate);
-    configs[exampleConfigSpecs.config.name]
-      = new ConfigSpec(exampleConfigSpecs.config);
-    const time = Date.now();
-    await dataAdapter.initialize();
-    await dataAdapter.setMulti(
-      {
-        'configs': compressData(JSON.stringify(configs)),
-        'gates': compressData(JSON.stringify(gates)),
-        'layer-configs': compressData(JSON.stringify({})),
-        'layers': compressData(JSON.stringify({})),
-      },
-      time,
-    );
-    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    await loadRedisStore();
+
+    const { result } = await dataAdapter.get('config-specs');
     if (result == null) {
       return;
     }
@@ -81,13 +89,14 @@ describe('Validate redis config adapter functionality', () => {
     // Initialize with network
     await statsig.initialize(serverKey, statsigOptions);
 
-    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    const { result } = await dataAdapter.get('config-specs');
     if (result == null) {
       return;
     }
+    const configSpecs = JSON.parse(result);
 
     // Check gates
-    const gates = JSON.parse(decompressData(result['gates']));
+    const gates = configSpecs['gates'];
     if (gates == null) {
       return;
     }
@@ -95,7 +104,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates['test_email_regex'].defaultValue).toEqual(false);
 
     // Check configs
-    const configs = JSON.parse(decompressData(result['configs']));
+    const configs = configSpecs['configs'];
     if (configs == null) {
       return;
     }
@@ -104,33 +113,34 @@ describe('Validate redis config adapter functionality', () => {
       .toEqual({ "header_text": "new user test", "foo": "bar" });
   });
 
-  test('Verify bootstrap properly gets synced in redis', async () => {
+  test('Verify that using both bootstrap and adapter is properly handled', async () => {
     expect.assertions(2);
+
+    await loadRedisStore();
 
     const jsonResponse = {
       time: Date.now(),
-      feature_gates: [
-        exampleConfigSpecs.gate,
-      ],
-      dynamic_configs: [exampleConfigSpecs.config],
+      feature_gates: [],
+      dynamic_configs: [],
       layer_configs: [],
       has_updates: true,
     };
 
-    // Bootstrap without network
+    // Bootstrap with adapter
     await statsig.initialize(serverKey, {
       localMode: true,
       bootstrapValues: JSON.stringify(jsonResponse),
       ...statsigOptions,
     });
     
-    const { result } = await dataAdapter.getMulti(['configs', 'gates']);
+    const { result } = await dataAdapter.get('config-specs');
     if (result == null) {
       return;
     }
+    const configSpecs = JSON.parse(result);
 
     // Check gates
-    const gates = JSON.parse(decompressData(result['gates']));
+    const gates = configSpecs['gates'];
     if (gates == null) {
       return;
     }
@@ -140,7 +150,7 @@ describe('Validate redis config adapter functionality', () => {
     expect(gates).toEqual(expectedGates);
 
     // Check configs
-    const configs = JSON.parse(decompressData(result['configs']));
+    const configs = configSpecs['configs'];
     if (configs == null) {
       return;
     }

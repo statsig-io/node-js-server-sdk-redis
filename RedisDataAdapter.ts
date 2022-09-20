@@ -3,6 +3,7 @@ import {
 } from 'statsig-node/dist/interfaces/IDataAdapter';
 import * as redis from 'redis';
 import { RedisClientOptions } from 'redis';
+import { compressData, decompressData } from './utils';
 
 // Global prefix to ensure uniqueness of storage keys
 const globalKeyPrefix = 'statsig-redis';
@@ -26,22 +27,13 @@ export default class RedisDataAdapter implements IDataAdapter {
   }
 
   public async get(key: string): Promise<AdapterResponse> {
-    const result = await this.client.hGet(globalKeyPrefix, key);
-    if (result == null) {
-      return { error: new Error('key does not exist') };
+    const value = await this.client.hGet(globalKeyPrefix, key);
+    if (value == null) {
+      return { error: new Error(`key (${key}) does not exist`) };
     }
-    const time = await this.client.hGet(globalKeyPrefix, timeKey)
-    return {result, time: Number(time)}
-  }
-
-  public async getMulti(keys: string[]): Promise<AdapterResponse> {
-    const result = {};
-    const multi = this.client.multi();
-    for (const key of keys) {
-      result[key] = await this.client.hGet(globalKeyPrefix, key);
-    }
-    const time = await this.client.hGet(globalKeyPrefix, timeKey);
-    return {result, time: Number(time)}
+    const decompressedData = decompressData(value);
+    const time = await this.client.hGet(timeKey, key)
+    return {result: decompressedData, time: Number(time)}
   }
 
   public async set(
@@ -50,23 +42,10 @@ export default class RedisDataAdapter implements IDataAdapter {
     time?: number | undefined,
   ): Promise<void> {
     const multi = this.client.multi();
-    multi.hSet(globalKeyPrefix, key, value);
+    const compressedData = compressData(value);
+    multi.hSet(globalKeyPrefix, key, compressedData);
     if (time !== undefined) {
-      multi.hSet(key, timeKey, time);
-    }
-    multi.exec();
-  }
-
-  public async setMulti(
-    records: Record<string, string>,
-    time?: number,
-  ): Promise<void> {
-    const multi = this.client.multi();
-    for (const itemKey in records) {
-      multi.hSet(globalKeyPrefix, itemKey, records[itemKey]);
-    }
-    if (time !== undefined) {
-      multi.hSet(globalKeyPrefix, timeKey, time);
+      multi.hSet(timeKey, key, time);
     }
     multi.exec();
   }
