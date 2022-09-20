@@ -1,6 +1,4 @@
-import {
-  AdapterResponse, IDataAdapter
-} from 'statsig-node/dist/interfaces/IDataAdapter';
+import { AdapterResponse, IDataAdapter } from 'statsig-node/interfaces';
 import * as redis from 'redis';
 import { RedisClientOptions } from 'redis';
 import { compressData, decompressData } from './utils';
