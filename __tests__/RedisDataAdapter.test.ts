@@ -10,7 +10,12 @@ describe('Validate redis config adapter functionality', () => {
   const serverKey = 'secret-9IWfdzNwExEYHEW4YfOQcFZ4xreZyFkbOXHaNbPsMwW'; 
     // --> Project: "Statsig - evaluation test", "Kong" server key
   const dbNumber = 1;
-  const dataAdapter = new RedisDataAdapter();
+  const dataAdapter = new RedisDataAdapter(
+    undefined, /* default */
+    undefined, /* default */
+    undefined, /* default */
+    dbNumber,
+  );
   const statsigOptions = {
     dataAdapter: dataAdapter,
     environment: { tier: 'staging' },

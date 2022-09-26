@@ -20,6 +20,7 @@ export default class RedisDataAdapter implements IDataAdapter {
     };
     this.client = redis.createClient(options);
     if (db !== undefined) {
+      this.client.connect();
       this.client.select(db);
     }
   }
