@@ -1,3 +1,7 @@
-const RedisDataAdapter = require('./RedisDataAdapter');
+import * as RedisDataAdapter from './RedisDataAdapter';
+import * as Statsig from 'statsig-node';
 
-module.exports = RedisDataAdapter;
+module.exports = {
+  RedisDataAdapter,
+  Statsig
+}

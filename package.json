@@ -1,22 +1,21 @@
 {
-  "name": "private-node-js-server-sdk-redis",
+  "name": "statsig-node-redis",
   "version": "1.0.0-beta.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "rm -rf dist/ && tsc",
+    "test": "npm run prepare && pnpm jest"
   },
   "types": "./index.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "interfaces@4.18.0-beta.7": "link:statsig-node/interfaces@4.18.0-beta.7",
     "redis": "^4.3.0",
     "statsig-node": "4.18.0-beta.7"
   },
   "peerDependencies": {
-    "interfaces@4.18.0-beta.7": "link:statsig-node/interfaces@4.18.0-beta.7",
     "statsig-node": "4.18.0-beta.7"
   },
   "devDependencies": {
