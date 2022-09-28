@@ -1,6 +1,6 @@
 {
   "name": "private-node-js-server-sdk-redis",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "",
   "main": "index.js",
   "scripts": {
