@@ -7,7 +7,7 @@ specifiers:
   '@types/jest': ^28.1.8
   jest: ^29.0.0
   redis: ^4.3.0
-  statsig-node: 4.18.0-beta.7
+  statsig-node: 4.18.0-beta.8
 
 dependencies:
   redis: 4.3.0
@@ -18,7 +18,7 @@ devDependencies:
   '@babel/preset-typescript': 7.18.6_@babel+core@7.18.13
   '@types/jest': 28.1.8
   jest: 29.0.0
-  statsig-node: 4.18.0-beta.7
+  statsig-node: 4.18.0-beta.8
 
 packages:
 
@@ -3353,8 +3353,8 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
-  /statsig-node/4.18.0-beta.7:
-    resolution: {integrity: sha512-Bz3NiKL1pJyeUW1FsOu3iF8O5px5/4El3mrN5vzXYZYds5IoAw115AX0ZgkzntYpt8vJr33E4j2IBATH1fFKpw==}
+  /statsig-node/4.18.0-beta.8:
+    resolution: {integrity: sha512-Po/uCCX9Tvns6m7tvBElYd3LHZ1RPQpthqdOfRYokNJkuB0ajcEFfPFfrPdmp5PpkeEQkG4AyjNsdTXGq+8Img==}
     dependencies:
       '@types/node-fetch': 2.6.2
       ip3country: 5.0.0
