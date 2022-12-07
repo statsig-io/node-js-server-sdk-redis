@@ -3,10 +3,32 @@ import * as redis from 'redis';
 import * as statsigsdk from 'statsig-node';
 // @ts-ignore
 const statsig = statsigsdk.default;
+const exampleConfigSpecs = require('../jest.setup');
+const jsonResponse = {
+  time: Date.now(),
+  feature_gates: [exampleConfigSpecs.gate, exampleConfigSpecs.disabled_gate],
+  dynamic_configs: [exampleConfigSpecs.config],
+  layer_configs: [exampleConfigSpecs.allocated_layer],
+  has_updates: true,
+};
+
+jest.mock('node-fetch', () => jest.fn());
+import fetch from 'node-fetch';
+//@ts-ignore
+fetch.mockImplementation((url: string) => {
+  if (url.includes('/download_config_specs')) {
+    console.log('dcs');
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(jsonResponse),
+      text: () => Promise.resolve(JSON.stringify(jsonResponse))
+    });
+  }
+  return Promise.reject();
+});
 
 describe('Validate redis config adapter functionality', () => {
-  const serverKey = 'secret-9IWfdzNwExEYHEW4YfOQcFZ4xreZyFkbOXHaNbPsMwW'; 
-    // --> Project: "Statsig - evaluation test", "Kong" server key
+  const serverKey = 'secret-key';
   const dbNumber = 1;
   const dataAdapter = new RedisDataAdapter(
     undefined, /* default */
