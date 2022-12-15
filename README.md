@@ -4,9 +4,9 @@
 A first party Redis integration with the [Statsig server-side Node.js SDK](https://github.com/statsig-io/node-js-server-sdk).
 
 ## Quick Setup
-1. Install the Statsig Node SDK *NOTE: (For now, you will need the latest beta version 4.18.0-beta.7)*
+1. Install the Statsig Node SDK
 ```
-npm install statsig-node@4.18.0-beta.7
+npm install statsig-node
 ```
 2. Install this package
 ```
