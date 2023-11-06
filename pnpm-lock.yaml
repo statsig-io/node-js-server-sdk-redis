@@ -9,7 +9,7 @@ specifiers:
   jest: ^29.0.0
   node-fetch: ^2.6.7
   redis: ^4.3.0
-  statsig-node: 4.18.0-beta.8
+  statsig-node: ^5.11.0
 
 dependencies:
   redis: 4.3.0
@@ -22,7 +22,7 @@ devDependencies:
   '@types/node-fetch': 2.6.2
   jest: 29.0.0
   node-fetch: 2.6.7
-  statsig-node: 4.18.0-beta.8
+  statsig-node: 5.11.0
 
 packages:
 
@@ -2197,8 +2197,8 @@ packages:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
     dev: true
 
-  /fsevents/2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  /fsevents/2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -2624,7 +2624,7 @@ packages:
       micromatch: 4.0.5
       walker: 1.0.8
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: true
 
   /jest-leak-detector/29.0.0:
@@ -3038,6 +3038,18 @@ packages:
       whatwg-url: 5.0.0
     dev: true
 
+  /node-fetch/2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+    dependencies:
+      whatwg-url: 5.0.0
+    dev: true
+
   /node-int64/0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
     dev: true
@@ -3357,14 +3369,13 @@ packages:
       escape-string-regexp: 2.0.0
     dev: true
 
-  /statsig-node/4.18.0-beta.8:
-    resolution: {integrity: sha512-Po/uCCX9Tvns6m7tvBElYd3LHZ1RPQpthqdOfRYokNJkuB0ajcEFfPFfrPdmp5PpkeEQkG4AyjNsdTXGq+8Img==}
+  /statsig-node/5.11.0:
+    resolution: {integrity: sha512-0VDaNvBf6bzKMShvcY5aXUMcY9CI8altGCpLYko7hnJE6n0c8CH9xf4F0WIOJVjKgCjikUe09oNINSsAqIdWuw==}
     dependencies:
-      '@types/node-fetch': 2.6.2
       ip3country: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.7.0
       sha.js: 2.4.11
-      ua-parser-js: 1.0.2
+      ua-parser-js: 1.0.37
       uuid: 8.3.2
     transitivePeerDependencies:
       - encoding
@@ -3490,8 +3501,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /ua-parser-js/1.0.2:
-    resolution: {integrity: sha512-00y/AXhx0/SsnI51fTc0rLRmafiGOM4/O+ny10Ps7f+j/b8p/ZY11ytMgznXkOVo4GQ+KwQG5UQLkLGirsACRg==}
+  /ua-parser-js/1.0.37:
+    resolution: {integrity: sha512-bhTyI94tZofjo+Dn8SN6Zv8nBDvyXTymAdM3LDI/0IboIUwTu1rEhW7v2TfiVsoYWgkQ4kOVqnI8APUFbIQIFQ==}
     dev: true
 
   /unicode-canonical-property-names-ecmascript/2.0.0:
