@@ -1,7 +1,3 @@
-import * as RedisDataAdapter from './RedisDataAdapter';
-import * as Statsig from 'statsig-node';
+import RedisDataAdapter from "./RedisDataAdapter";
 
-export {
-  RedisDataAdapter,
-  Statsig
-}
+export { RedisDataAdapter };
