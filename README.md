@@ -14,11 +14,11 @@ npm install statsig-node-redis
 ```
 3. Import the package
 ```
-import { RedisDataAdapter } from 'statsig-node-redis'
+import RedisDataAdapter from 'statsig-node-redis'
 ```
 4. Create an instance of the `RedisDataAdapter`
 ```
-const dataAdapter = new RedisDataAdapter();
+const dataAdapter = new RedisDataAdapter({url: "redis://statsig:foo@bar.redis.server:6380"});
 ```
 5. When initializing the `statsig` sdk, add the adapter to options
 ```
@@ -32,19 +32,15 @@ await statsig.initialize(
 When initializing `RedisDataAdapter`, you can specify the following options:
 ```
 const dataAdapter = new RedisDataAdapter(
-  hostname,
-  port,
-  password,
-  db,
+  redisOptions,
+  statsigCacheKey,
 );
 ```
 
 | param | default | description |
 | --- | --- | --- |
-| hostname  | 'localhost' | Redis server hostname |
-| port  | 6379 | Redis server port |
-| password  | | ACL password or the old "--requirepass" password |
-| db | 0 | Redis database number (supports 16 databases) |
+| redisOptions | {} | Options for initializing the Redis client (the database must be specified in order for the adapter to work) |
+| statsigCacheKey  | 'statsig-redis' | The key that the adapter will use to store data in Redis |
 
 ## Links
 [Node Redis](https://github.com/redis/node-redis)
