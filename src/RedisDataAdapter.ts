@@ -8,27 +8,17 @@ export default class RedisDataAdapter implements IDataAdapter {
   private client;
 
   public constructor(
-    hostname?: string,
-    port?: number,
-    password?: string,
-    db?: number
+    redisOptions: RedisClientOptions,
+    statsigCacheKey?: string
   ) {
-    const options: RedisClientOptions = {
-      socket: {
-        host: hostname,
-        port: port,
-      },
-      password: password,
-    };
-    this.client = redis.createClient(options);
-    if (db !== undefined) {
+    this.client = redis.createClient(redisOptions);
+    if (redisOptions.database !== undefined) {
       this.client.connect();
-      this.client.select(db);
+      this.client.select(redisOptions.database);
     }
-  }
-
-  public setGlobalKey(key: string) {
-    this.globalKey = key;
+    if (statsigCacheKey) {
+      this.globalKey = statsigCacheKey;
+    }
   }
 
   public async get(key: string): Promise<AdapterResponse> {
@@ -45,7 +35,6 @@ export default class RedisDataAdapter implements IDataAdapter {
     value: string,
     time?: number | undefined
   ): Promise<void> {
-    const multi = this.client.multi();
     const compressedData = compressData(value);
     await this.client.hSet(this.globalKey, key, compressedData);
   }

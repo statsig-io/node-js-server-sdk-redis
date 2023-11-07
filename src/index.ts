@@ -1,3 +1,3 @@
 import RedisDataAdapter from "./RedisDataAdapter";
 
-export { RedisDataAdapter };
+export default RedisDataAdapter;

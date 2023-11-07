@@ -1,13 +1,13 @@
 {
   "name": "statsig-node-redis",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "prepare": "rm -rf dist/ && tsc",
     "test": "npm run prepare && pnpm jest"
   },
-  "types": "./index.d.ts",
+  "types": "dist/index.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",
